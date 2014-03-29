@@ -10,7 +10,18 @@ public class SmartBoard_AppMain extends JFrame {
     
     JMenuItem   m_exitItem;
     JMenuItem   m_aboutItem;
-    JButton     m_clearBtn;
+    
+    // toolbar buttons
+    JButton     m_funcNewPageBtn;
+    
+    JButton     m_eraserBtn;
+    JButton     m_penBlackBtn;
+    JButton     m_penRedBtn;
+    JButton     m_penGreenBtn;
+    JButton     m_penBlueBtn;
+    
+    JButton     m_lineThinBtn;
+    JButton     m_lineThickBtn;
     
     
     private SmartBoard_AppMain () {
@@ -53,11 +64,37 @@ public class SmartBoard_AppMain extends JFrame {
         
         // Toolbar config
         JToolBar toolBar = new JToolBar ();
+        toolBar.setMargin (new Insets (2, 2, 2, 2));
+        toolBar.setBorderPainted (true);
+        toolBar.setFloatable (false);
         add (toolBar, BorderLayout.NORTH);
         
         // Add toolbar items
-        m_clearBtn = new JButton ("Clear");
-        toolBar.add (m_clearBtn);
+        m_funcNewPageBtn = new JButton (new ImageIcon ("res/func_newPage.png"));
+        toolBar.add (m_funcNewPageBtn);
+        toolBar.addSeparator ();
+    
+        m_eraserBtn = new JButton (new ImageIcon ("res/eraser.png"));
+        toolBar.add (m_eraserBtn);
+        
+        m_penBlackBtn = new JButton (new ImageIcon ("res/pen_black.png"));
+        toolBar.add (m_penBlackBtn);
+        
+        m_penRedBtn = new JButton (new ImageIcon ("res/pen_red.png"));
+        toolBar.add (m_penRedBtn);
+        
+        m_penGreenBtn = new JButton (new ImageIcon ("res/pen_green.png"));
+        toolBar.add (m_penGreenBtn);
+        
+        m_penBlueBtn = new JButton (new ImageIcon ("res/pen_blue.png"));
+        toolBar.add (m_penBlueBtn);
+        toolBar.addSeparator ();
+        
+        m_lineThinBtn = new JButton (new ImageIcon ("res/line_thin.png"));
+        toolBar.add (m_lineThinBtn);
+        
+        m_lineThickBtn = new JButton (new ImageIcon ("res/line_thick.png"));
+        toolBar.add (m_lineThickBtn);
         toolBar.addSeparator ();
         
         // main panels
