@@ -1,18 +1,52 @@
-
+// Standard imports
+import java.util.*;
 import java.io.File;
 import java.net.URL;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
+
+// javacv imports
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.*;
 import com.googlecode.javacv.cpp.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
-public class SmartBoard_CamProc {
+// we have a factory method to create the process - to avoid ID collision
+// Note that the factory is not thread safe - Do it @ main function.
+public class SmartBoard_CamProc implements Runnable {
     
-    private static void captureFrame() {
+    // data members
+    int m_camId;
+    
+    // static data members
+    static Hashtable<Integer, SmartBoard_CamProc> sm_camIdSet;
+    
+    // class initilizer
+    static {
+         sm_camIdSet = new Hashtable<Integer, SmartBoard_CamProc> ();
+    }
+
+    // create the camera process (the factory method to provide central control)
+    public static SmartBoard_CamProc camFactory (int camId) {
+        
+        if (sm_camIdSet.contains (camId) == true) {
+            SmartBoard.logErr ("Creating duplicate camera ID: " + camId); 
+            return null;
+        }
+        
+        SmartBoard_CamProc newProc = new SmartBoard_CamProc (camId);
+        sm_camIdSet.put (camId, newProc);
+        return newProc;
+    } 
+    
+    // private initializer
+    private SmartBoard_CamProc (int camId) {
+        m_camId = camId;
+    }
+    
+    private static void captureFrame () {
         
         try {
             FrameGrabber grabber = FrameGrabber.createDefault(0);
@@ -50,8 +84,10 @@ public class SmartBoard_CamProc {
         }
     }
     
-    public static void main(String[] args) {
+    public void run () {
         
-        captureFrame ();
+        while (true) {
+            captureFrame ();
+        }
     }
 }
