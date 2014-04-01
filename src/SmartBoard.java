@@ -15,6 +15,12 @@ public class SmartBoard {
     public static void main (String args[]) {
         
         SmartBoard.logInfo ("Hello");
+        
+        // start the cam proc
+        Thread cam_0 = new Thread (SmartBoard_CamProc.camFactory (0));
+        cam_0.start ();
+        
+        // run the UI
         SmartBoard_AppMain.getAppMain ();
     }
 

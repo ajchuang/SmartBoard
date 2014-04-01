@@ -22,6 +22,9 @@ public class SmartBoard_CamProc implements Runnable {
     
     // static data members
     static Hashtable<Integer, SmartBoard_CamProc> sm_camIdSet;
+    static int m_camWidth   = 1024;
+    static int m_camHeight  = 768;
+    
     
     // class initilizer
     static {
@@ -46,48 +49,41 @@ public class SmartBoard_CamProc implements Runnable {
         m_camId = camId;
     }
     
-    private static void captureFrame () {
-        
-        try {
-            FrameGrabber grabber = FrameGrabber.createDefault(0);
-            grabber.start ();
-            IplImage img = grabber.grab ();
-            int width  = img.width ();
-            int height = img.height ();
-            
-            IplImage grayImage = IplImage.create (width, height, IPL_DEPTH_8U, 1);
-            cvCvtColor (img, grayImage, CV_BGR2GRAY);
-            
-            // Let's find some contours! but first some thresholding...
-            cvThreshold (grayImage, grayImage, 64, 255, CV_THRESH_BINARY);
-
-            // To check if an output argument is null we may call either isNull() or equals(null).
-            /*
-            CvSeq contour = new CvSeq(null);
-            cvFindContours(grayImage, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-            while (contour != null && !contour.isNull()) {
-                if (contour.elem_size() > 0) {
-                    CvSeq points = cvApproxPoly(contour, Loader.sizeof(CvContour.class),
-                            storage, CV_POLY_APPROX_DP, cvContourPerimeter(contour)*0.02, 0);
-                    cvDrawContours(img, points, CvScalar.BLUE, CvScalar.BLUE, -1, 1, CV_AA);
-                }
-                contour = contour.h_next();
-            }
-            */
-            
-            if (img != null) {
-                cvSaveImage ("capture.jpg", grayImage);
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private int locateTorch (IplImage binImage) {
+        return 100;
     }
+    
+    private void liveCapFrame () {
+        
+        int w = m_camWidth;
+        int h = m_camHeight;
+        IplImage raw = null;
+        
+        CvCapture cap = cvCreateCameraCapture (m_camId);
+        cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_WIDTH, w);
+        cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_HEIGHT, h);
+        
+        while (true) {
+            
+            raw = cvQueryFrame (cap);
+            
+            IplImage grayImage = IplImage.create (w, h, IPL_DEPTH_8U, 1);
+            cvCvtColor (raw, grayImage, CV_BGR2GRAY);
+            cvThreshold (grayImage, grayImage, 250, 255, CV_THRESH_BINARY);
+            
+            if (raw == null) {
+                SmartBoard.logErr ("Failed to capture");
+                System.exit (0);
+            }
+            
+            //cvShowImage ("Original", raw);
+            cvShowImage ("Binary", grayImage);
+            locateTorch (grayImage);
+        }
+    } 
     
     public void run () {
         
-        while (true) {
-            captureFrame ();
-        }
+        liveCapFrame ();
     }
 }
