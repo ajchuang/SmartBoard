@@ -12,3 +12,4 @@ mv ./src/*.class ./ 1>/dev/null 2>/dev/null
 # show errors
 cat build.log &
 
+
