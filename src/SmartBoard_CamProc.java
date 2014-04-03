@@ -22,8 +22,9 @@ public class SmartBoard_CamProc implements Runnable {
     
     // static data members
     static Hashtable<Integer, SmartBoard_CamProc> sm_camIdSet;
-    static int m_camWidth   = 1024;
-    static int m_camHeight  = 768;
+    static int m_camWidth   = 320;
+    static int m_camHeight  = 240;
+    static int m_binThrsh   = 253;
     
     
     // class initilizer
@@ -63,22 +64,62 @@ public class SmartBoard_CamProc implements Runnable {
         cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_WIDTH, w);
         cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_HEIGHT, h);
         
+        // image caliberation
+        
+        // starting image processing - to decide the distance
         while (true) {
             
             raw = cvQueryFrame (cap);
             
-            IplImage grayImage = IplImage.create (w, h, IPL_DEPTH_8U, 1);
-            cvCvtColor (raw, grayImage, CV_BGR2GRAY);
-            cvThreshold (grayImage, grayImage, 250, 255, CV_THRESH_BINARY);
-            
             if (raw == null) {
-                SmartBoard.logErr ("Failed to capture");
+                SmartBoard.logErr ("System Error: Failed to capture");
                 System.exit (0);
             }
             
-            //cvShowImage ("Original", raw);
-            cvShowImage ("Binary", grayImage);
+            IplImage grayImage = IplImage.create (w, h, IPL_DEPTH_8U, 1);
+            cvCvtColor (raw, grayImage, CV_BGR2GRAY);
+            cvThreshold (grayImage, grayImage, m_binThrsh, 255, CV_THRESH_BINARY);
+            
+            cvShowImage ("Original", raw);
+            
+            /*
             locateTorch (grayImage);
+            CvSeq ctr = null;
+            CvMemStorage storage = CvMemStorage.create ();
+            
+            cvFindContours (
+                grayImage,
+                storage,
+                ctr,
+                Loader.sizeof (CvContour.class),
+                CV_RETR_LIST,
+                CV_LINK_RUNS,
+                cvPoint (0,0));
+                
+            double maxArea = 100.0;
+            double curArea = 0.0;
+            while (ctr != null && ctr.isNull () == false) {
+                
+                curArea = cvContourArea (ctr, CV_WHOLE_SEQ, 1);
+		
+                if (curArea > maxArea) {
+                    maxArea = curArea;
+                    cvDrawContours (
+                        grayImage, 
+                        ctr, 
+                        CV_RGB (0,0,0), 
+                        CV_RGB (0,0,0),
+						 0,
+                        CV_FILLED,
+                        8,
+                        cvPoint(0,0));
+                }
+		
+                ctr = ctr.h_next ();
+            }
+            */
+            
+            cvShowImage ("Binary", grayImage);
         }
     } 
     
