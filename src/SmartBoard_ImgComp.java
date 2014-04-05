@@ -1,9 +1,5 @@
 // common imports
-import javax.swing.*;
-import javax.imageio.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
 import java.awt.image.BufferedImage;
 
 public class SmartBoard_ImgComp extends SmartBoard_Component {
@@ -21,5 +17,10 @@ public class SmartBoard_ImgComp extends SmartBoard_Component {
     public int getX () { return m_x; }
     public int getY () { return m_y; }
     public BufferedImage getImg () { return m_img; }
+    
+    @Override
+    public void draw (Graphics2D g2d) {
+        g2d.drawImage (m_img, null, m_x, m_y);
+    }
 
 }

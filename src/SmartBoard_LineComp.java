@@ -1,5 +1,12 @@
+// common imports
+import javax.swing.*;
+import javax.imageio.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.awt.image.BufferedImage;
 
-public class SmartBoard_Stroke extends SmartBoard_Component {
+public class SmartBoard_LineComp extends SmartBoard_Component {
     
     int m_xBegin;
     int m_yBegin;
@@ -7,7 +14,7 @@ public class SmartBoard_Stroke extends SmartBoard_Component {
     int m_yEnd;
     int m_width;
     
-    public SmartBoard_Stroke (int x, int y, int x2, int y2, int width) {
+    public SmartBoard_LineComp (int x, int y, int x2, int y2, int width) {
         m_xBegin = x;
         m_yBegin = y;
         m_xEnd = x2;
@@ -29,5 +36,11 @@ public class SmartBoard_Stroke extends SmartBoard_Component {
                        + m_yBegin   + ":"
                        + m_xEnd     + ":"
                        + m_yEnd);
+    }
+    
+    @Override
+    public void draw (Graphics2D g2d) {
+        g2d.setStroke (new BasicStroke (m_width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.drawLine (m_xBegin, m_yBegin, m_xEnd, m_yEnd);
     }
 }
