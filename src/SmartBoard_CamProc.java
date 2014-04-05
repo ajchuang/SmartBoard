@@ -80,7 +80,7 @@ public class SmartBoard_CamProc implements Runnable {
             cvCvtColor (raw, grayImage, CV_BGR2GRAY);
             cvThreshold (grayImage, grayImage, m_binThrsh, 255, CV_THRESH_BINARY);
             
-            cvShowImage ("Original", raw);
+            cvShowImage ("Original" + m_camId, raw);
             
             /*
             locateTorch (grayImage);
@@ -119,7 +119,7 @@ public class SmartBoard_CamProc implements Runnable {
             }
             */
             
-            cvShowImage ("Binary", grayImage);
+            cvShowImage ("Binary" + m_camId, grayImage);
         }
     } 
     

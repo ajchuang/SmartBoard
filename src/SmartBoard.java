@@ -11,17 +11,24 @@ public class SmartBoard {
     public static void logInfo (String s) {
         System.out.println ("  [INFO]" + s);
     }
+    
+    static void startCamProc (int i) {
+        Thread cam = new Thread (SmartBoard_CamProc.camFactory (i));
+        cam.start ();
+    }
 
     public static void main (String args[]) {
         
         SmartBoard.logInfo ("Hello");
         
         // start the cam proc
-        Thread cam_0 = new Thread (SmartBoard_CamProc.camFactory (0));
-        cam_0.start ();
+        //startCamProc (0);
+        //startCamProc (1);
+        
+        SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
         
         // run the UI
-        SmartBoard_AppMain.getAppMain ();
+        //SmartBoard_AppMain.getAppMain ();
     }
 
 }
