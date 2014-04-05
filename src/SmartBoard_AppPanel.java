@@ -6,10 +6,12 @@ import java.awt.image.BufferedImage;
 
 public class SmartBoard_AppPanel extends JPanel {
     
-    Vector<SmartBoard_Component> m_strokes;
+    Stack<SmartBoard_Component> m_strokes;
+    Stack<SmartBoard_Component> m_undoStrokes;
     
     public SmartBoard_AppPanel () {
-        m_strokes = new Vector<SmartBoard_Component> (); 
+        m_strokes = new Stack<SmartBoard_Component> (); 
+        m_undoStrokes = new Stack<SmartBoard_Component> ();
     }
     
     @Override
@@ -25,12 +27,16 @@ public class SmartBoard_AppPanel extends JPanel {
         for (SmartBoard_Component ss: m_strokes) {
             
             if (ss instanceof SmartBoard_Stroke) { 
+                
                 SmartBoard_Stroke i = (SmartBoard_Stroke)ss;
                 g2d.setStroke (new BasicStroke (i.getWidth (), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 g2d.drawLine (i.getX_Begin (), i.getY_Begin (), i.getX_End (), i.getY_End ());
+                
             } else if (ss instanceof SmartBoard_ImgComp) {
+                
                 SmartBoard_ImgComp x = (SmartBoard_ImgComp)ss;
                 g2d.drawImage (x.getImg (), null, x.getX (), x.getY ());
+                
             }
         }
 
@@ -40,17 +46,33 @@ public class SmartBoard_AppPanel extends JPanel {
     public void drawLine (int x_begin, int y_begin, int x_end, int y_end, int width, int color) {
         
         SmartBoard_Stroke newStroke = new SmartBoard_Stroke (x_begin, y_begin, x_end, y_end, width);
-        m_strokes.add (newStroke);
+        m_strokes.push (newStroke);
+        m_undoStrokes.clear ();
     }
     
     public void drawImage (BufferedImage img, int x, int y) {
         
         SmartBoard_ImgComp newImg = new SmartBoard_ImgComp (img, x, y);
-        m_strokes.add (newImg);
+        m_strokes.push (newImg);
+        m_undoStrokes.clear ();
     }
     
     public void clearPanel () {
         m_strokes.clear ();
+    }
+    
+    public void undoOperation () {
+        
+        if (m_strokes.empty () == false) {
+            m_undoStrokes.push (m_strokes.pop ());
+        }
+    }
+    
+    public void redoOperation () {
+        
+        if (m_undoStrokes.empty () == false) {
+            m_strokes.push (m_undoStrokes.pop ());
+        }
     }
 
 }
