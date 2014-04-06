@@ -54,6 +54,9 @@ public class SmartBoard_AppCalib extends JFrame implements ActionListener {
             m_mainPanel.drawImage (in, left_x, lower_y);
             m_mainPanel.drawImage (in, right_x, upper_y);
             m_mainPanel.drawImage (in, right_x, lower_y);
+            m_mainPanel.drawCircle (width/2, height/2, 20, Color.WHITE);
+            m_mainPanel.drawString ("Calibration", width/2, height/2 - 50, 3, Color.WHITE);
+            m_mainPanel.repaint ();
             
         } catch (Exception e) {
             e.printStackTrace ();
@@ -85,7 +88,7 @@ public class SmartBoard_AppCalib extends JFrame implements ActionListener {
     
     public void actionPerformed (ActionEvent a) {
         drawCalibIcons ();
-        drawCalibLines ();
+        //drawCalibLines ();
         m_timer.stop ();
     }
 } 

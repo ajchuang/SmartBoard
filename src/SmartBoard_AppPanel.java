@@ -37,9 +37,9 @@ public class SmartBoard_AppPanel extends JPanel {
         g2d.dispose();
     }
     
-    public void drawLine (int x_begin, int y_begin, int x_end, int y_end, int width, int color) {
+    public void drawLine (int x_begin, int y_begin, int x_end, int y_end, int width, Color c) {
         
-        SmartBoard_LineComp newStroke = new SmartBoard_LineComp (x_begin, y_begin, x_end, y_end, width);
+        SmartBoard_LineComp newStroke = new SmartBoard_LineComp (x_begin, y_begin, x_end, y_end, width, c);
         m_strokes.push (newStroke);
         m_undoStrokes.clear ();
     }
@@ -50,6 +50,20 @@ public class SmartBoard_AppPanel extends JPanel {
         m_strokes.push (newImg);
         m_undoStrokes.clear ();
     }
+    
+    public void drawCircle (int x, int y, int r, Color c) {
+        
+        SmartBoard_CircleComp cComp = new SmartBoard_CircleComp (x, y, r, 3, c);
+        m_strokes.push (cComp);
+        m_undoStrokes.clear ();
+    }
+    
+    public void drawString (String s, int x, int y, int w, Color c) {
+        
+        SmartBoard_StringComp sComp = new SmartBoard_StringComp (x, y, w, s, c);
+        m_strokes.push (sComp);
+        m_undoStrokes.clear ();
+    } 
     
     public void clearPanel () {
         m_strokes.clear ();

@@ -13,13 +13,15 @@ public class SmartBoard_LineComp extends SmartBoard_Component {
     int m_xEnd;
     int m_yEnd;
     int m_width;
+    Color m_color;
     
-    public SmartBoard_LineComp (int x, int y, int x2, int y2, int width) {
+    public SmartBoard_LineComp (int x, int y, int x2, int y2, int width, Color c) {
         m_xBegin = x;
         m_yBegin = y;
         m_xEnd = x2;
         m_yEnd = y2;     
         m_width = width;
+        m_color = c;
     }
     
     public int getX_Begin () { return m_xBegin; }
@@ -40,6 +42,7 @@ public class SmartBoard_LineComp extends SmartBoard_Component {
     
     @Override
     public void draw (Graphics2D g2d) {
+        g2d.setColor (m_color);
         g2d.setStroke (new BasicStroke (m_width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2d.drawLine (m_xBegin, m_yBegin, m_xEnd, m_yEnd);
     }
