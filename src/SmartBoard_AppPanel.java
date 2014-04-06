@@ -31,23 +31,7 @@ public class SmartBoard_AppPanel extends JPanel {
         Graphics2D g2d = (Graphics2D) g.create();
 
         for (SmartBoard_Component ss: m_strokes) {
-            
             ss.draw (g2d);
-            
-            /*
-            if (ss instanceof SmartBoard_Stroke) { 
-                
-                SmartBoard_Stroke i = (SmartBoard_Stroke)ss;
-                g2d.setStroke (new BasicStroke (i.getWidth (), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2d.drawLine (i.getX_Begin (), i.getY_Begin (), i.getX_End (), i.getY_End ());
-                
-            } else if (ss instanceof SmartBoard_ImgComp) {
-                
-                SmartBoard_ImgComp x = (SmartBoard_ImgComp)ss;
-                g2d.drawImage (x.getImg (), null, x.getX (), x.getY ());
-                
-            }
-            */
         }
 
         g2d.dispose();
