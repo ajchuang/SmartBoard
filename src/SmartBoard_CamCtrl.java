@@ -2,6 +2,7 @@
 import java.util.*;
 import java.io.File;
 import java.net.*;
+import java.nio.ByteBuffer;
 
 // javacv imports
 import com.googlecode.javacpp.Loader;
@@ -13,12 +14,14 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
-// we have a factory method to create the process - to avoid ID collision
-// Note that the factory is not thread safe - Do it @ main function.
-public class SmartBoard_CamProc implements Runnable {
+public class SmartBoard_CamCtrl {
     
     // data members
     int m_camId;
+    
+    // networking members
+    InetAddress m_host;
+    int m_port;
     
     // static data members
     static Hashtable<Integer, SmartBoard_CamProc> sm_camIdSet;
@@ -26,35 +29,29 @@ public class SmartBoard_CamProc implements Runnable {
     static int m_camHeight  = 180;
     static int m_binThrsh   = 253;
     
-    // class initilizer
-    static {
-         sm_camIdSet = new Hashtable<Integer, SmartBoard_CamProc> ();
-    }
-
-    // create the camera process (the factory method to provide central control)
-    public static SmartBoard_CamProc camFactory (int camId) {
-        
-        if (sm_camIdSet.contains (camId) == true) {
-            SmartBoard.logErr ("Creating duplicate camera ID: " + camId); 
-            return null;
-        }
-        
-        SmartBoard_CamProc newProc = new SmartBoard_CamProc (camId);
-        sm_camIdSet.put (camId, newProc);
-        return newProc;
-    } 
-    
-    // private initializer
-    private SmartBoard_CamProc (int camId) {
-        m_camId = camId;
+    public SmartBoard_CamCtrl (int nCam, InetAddress host, int port) {
+        m_camId = nCam;
+        m_host = host;
+        m_port = port;
     }
     
-    private int locateTorch (IplImage binImage) {
-        return 100;
+    // sending the UDP packet to the server
+    public void sendToServ (int theta, int confidence) {
+        
+        SmartBoard_msg msg = new SmartBoard_msg (m_camId, theta, confidence);
+        
+        try {
+            byte[] raw = msg.deflate ();
+            DatagramPacket packet = new DatagramPacket (raw, raw.length, m_host, m_port); 
+            DatagramSocket socket = new DatagramSocket ();
+            socket.send (packet);                         
+            socket.close ();
+        } catch (Exception e) {
+            e.printStackTrace ();
+        }                         
     }
     
-    private void liveCapFrame () {
-        
+    public void startCap () {
         int w = m_camWidth;
         int h = m_camHeight;
         IplImage raw = null;
@@ -64,7 +61,7 @@ public class SmartBoard_CamProc implements Runnable {
         cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_HEIGHT, h);
         
         // image caliberation
-        SmartBoard.logErr ("Thread: " + m_camId + " starting");
+        System.out.println ("Thread: " + m_camId + " starting");
         
         // starting image processing - to decide the distance
         while (true) {
@@ -72,7 +69,7 @@ public class SmartBoard_CamProc implements Runnable {
             raw = cvQueryFrame (cap);
             
             if (raw == null) {
-                SmartBoard.logErr ("System Error: Failed to capture");
+                System.out.println ("System Error: Failed to capture");
                 System.exit (0);
             }
     
@@ -120,11 +117,34 @@ public class SmartBoard_CamProc implements Runnable {
             */
             
             //cvShowImage ("Binary" + m_camId, grayImage);
+            sendToServ (15, 90);
         }
-    } 
+    }
     
-    public void run () {
+    public static void main (String[] args) {
         
-        liveCapFrame ();
+        if (args.length != 3) {
+            System.out.println ("Incorrect input format");
+            System.out.println ("java SmartBoard_CamCtrl [host] [port] [camId]");
+            return;
+        }
+        
+        String host     = args[0];
+        String port     = args[1];
+        String camId    = args[2];
+        
+        try {
+            SmartBoard_CamCtrl ctrl = 
+                new SmartBoard_CamCtrl (
+                    Integer.parseInt (camId),
+                    InetAddress.getByName (host), 
+                    Integer.parseInt (port));
+            
+            ctrl.startCap ();
+            
+        } catch (Exception e) {
+            System.out.println ("Failed to start server.");
+            e.printStackTrace ();
+        }
     }
 }

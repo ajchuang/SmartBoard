@@ -3,6 +3,8 @@ import java.io.File;
 import java.net.URL;
 
 public class SmartBoard {
+    
+    final public static int M_PORT = 8888; 
 
     public static void logErr (String s) {
         System.out.println ("[ERROR]" + s);
@@ -12,23 +14,36 @@ public class SmartBoard {
         System.out.println ("  [INFO]" + s);
     }
     
-    static void startCamProc (int i) {
+    static Thread startCamProc (int i) {
         Thread cam = new Thread (SmartBoard_CamProc.camFactory (i));
-        cam.start ();
+        return cam;
+        //cam.start ();
     }
 
     public static void main (String args[]) {
         
         SmartBoard.logInfo ("Hello");
         
-        // start the cam proc
-        //startCamProc (0);
-        //startCamProc (1);
+        if (args.length != 1) {
+            System.out.println ("Incorrect input format: " + args.length);
+            System.out.println ("java SmartBoard [nCamera]");
+            return;
+        }
         
-        SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
+        try {
+            
+            SmartBoard_UdpServ serv = new SmartBoard_UdpServ (M_PORT, 4);
+            Thread t = new Thread (serv);
+            t.start ();
+            
+            //SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
         
-        // run the UI
-        //SmartBoard_AppMain.getAppMain ();
+            // run the UI
+            //SmartBoard_AppMain.getAppMain ();
+        } catch (Exception e) {
+            System.out.println ("Exception: " + e);
+            e.printStackTrace ();
+        }
     }
 
 }
