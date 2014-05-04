@@ -3,6 +3,7 @@ import java.util.*;
 import java.io.File;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.awt.Point;
 
 public class SmartBoard_UdpServ implements Runnable {
 
@@ -23,9 +24,21 @@ public class SmartBoard_UdpServ implements Runnable {
         }
     }
     
+    // solve the interaction of the equation.
+    Point solveEquation (SmartBoard_msg v_msg, SmartBoard_msg h_msg) {
+        Point p = null;
+        return p;
+    }
+    
+    // send point to UI
+    void paintPoint (Point p) {
+    }
+    
     //TODO
     void analyze () {
         
+        // cam0 is the upper one, and cam1 is the lower one.
+        // cam2 is the right one, and cam3 is the left one
         SmartBoard_msg[] cams = new SmartBoard_msg[4];
         
         // check if null
@@ -36,10 +49,20 @@ public class SmartBoard_UdpServ implements Runnable {
         }
         
         // pick the best 2.
+        SmartBoard_msg ver, hor;
         
-        // solve the equation.
+        if (cams[0].getConf () >= cams[0].getConf ())
+            ver = cams[0];
+        else
+            ver = cams[1];
         
-        // plot the point
+        if (cams[2].getConf () >= cams[3].getConf ())
+            hor = cams[2];
+        else
+            hor = cams[3];
+        
+        // solve the equation & paint
+        paintPoint (solveEquation (ver, hor));
     }
 
     public void run () {
