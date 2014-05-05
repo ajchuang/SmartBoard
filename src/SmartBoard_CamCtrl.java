@@ -119,13 +119,11 @@ public class SmartBoard_CamCtrl {
                     CV_LINK_RUNS,
                     cvPoint (0,0));
             
-        
             if (r == -1) {
                 // contour finds nothing, return
                 log ("cvFindContours returns -1");
                 continue; 
             }
-            
             
             ctrIdx = ctrList;
             int idx = 0, maxIdx = 0;
