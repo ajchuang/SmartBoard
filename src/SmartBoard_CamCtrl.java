@@ -3,11 +3,18 @@ import java.util.*;
 import java.io.File;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.awt.AWTException;
+import java.awt.event.InputEvent;
 
 // javacv imports
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.*;
 import com.googlecode.javacv.cpp.*;
+import com.googlecode.javacv.cpp.opencv_core.CvPoint;
+import com.googlecode.javacv.cpp.opencv_core.CvScalar;
+import com.googlecode.javacv.cpp.opencv_core.CvSeq;
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
+
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -15,6 +22,11 @@ import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
 public class SmartBoard_CamCtrl {
+    
+    // constants
+    final static int m_camWidth   = 320;
+    final static int m_camHeight  = 240;
+    final static int m_binThrsh   = 253;
     
     // data members
     int m_camId;
@@ -25,9 +37,11 @@ public class SmartBoard_CamCtrl {
     
     // static data members
     static Hashtable<Integer, SmartBoard_CamProc> sm_camIdSet;
-    static int m_camWidth   = 240;
-    static int m_camHeight  = 180;
-    static int m_binThrsh   = 253;
+    
+    
+    public static void log (String s) {
+        System.out.println ("  [Cam] " + s);
+    } 
     
     public SmartBoard_CamCtrl (int nCam, InetAddress host, int port) {
         m_camId = nCam;
@@ -52,86 +66,137 @@ public class SmartBoard_CamCtrl {
     }
     
     public void startCap () {
+        
         int w = m_camWidth;
         int h = m_camHeight;
-        IplImage raw = null;
+        double curArea = 0.0;
+        double maxArea = 0.0;
         
+        // opencv variables
+        IplImage raw = null;
+        IplImage hsvImage = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 3);
+        IplImage grayImage = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 1);
+        IplImage binImage = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 1);
+        
+        CvMemStorage storage = CvMemStorage.create ();
+        CvSeq ctrIdx = null;
+         
+        CvMoments moments = new CvMoments (Loader.sizeof (CvMoments.class));
+        
+        // setup the capture and property
         CvCapture cap = cvCreateCameraCapture (m_camId);
         cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_WIDTH, w);
         cvSetCaptureProperty (cap, CV_CAP_PROP_FRAME_HEIGHT, h);
         
         // image caliberation
-        System.out.println ("Thread: " + m_camId + " starting");
-        
-        // starting image processing - to decide the distance
+        log ("Thread: " + m_camId + " starting");
+        long frameIdx = 0;
+        // starting image processing - to decide the equation
         while (true) {
             
+            // step 1. capture the frame
             raw = cvQueryFrame (cap);
+            //log ("frame: " + frameIdx++);
             
             if (raw == null) {
-                System.out.println ("System Error: Failed to capture");
+                log ("System Error: Failed to capture");
                 System.exit (0);
             }
-    
-            IplImage grayImage = IplImage.create (w, h, IPL_DEPTH_8U, 1);
+            
+            // step 2. do binary threshholding
             cvCvtColor (raw, grayImage, CV_BGR2GRAY);
-            cvThreshold (grayImage, grayImage, m_binThrsh, 255, CV_THRESH_BINARY);
+            cvThreshold (grayImage, binImage, m_binThrsh, 255, CV_THRESH_BINARY);
             
-            cvShowImage ("Original" + m_camId, raw);
+            // step 3. find the max contour
+            CvSeq ctrList = new CvSeq ();
+            int r = 
+                cvFindContours (
+                    binImage,
+                    storage,
+                    ctrList,
+                    Loader.sizeof (CvContour.class),
+                    CV_RETR_LIST,
+                    CV_LINK_RUNS,
+                    cvPoint (0,0));
             
-            /*
-            locateTorch (grayImage);
-            CvSeq ctr = null;
-            CvMemStorage storage = CvMemStorage.create ();
+        
+            if (r == -1) {
+                // contour finds nothing, return
+                log ("cvFindContours returns -1");
+                continue; 
+            }
             
-            cvFindContours (
-                grayImage,
-                storage,
-                ctr,
-                Loader.sizeof (CvContour.class),
-                CV_RETR_LIST,
-                CV_LINK_RUNS,
-                cvPoint (0,0));
+            
+            ctrIdx = ctrList;
+            int idx = 0, maxIdx = 0;
+            
+            // find the largest area
+            while (ctrList != null && !ctrList.isNull ()) {
                 
-            double maxArea = 100.0;
-            double curArea = 0.0;
-            while (ctr != null && ctr.isNull () == false) {
-                
-                curArea = cvContourArea (ctr, CV_WHOLE_SEQ, 1);
+                curArea = cvContourArea (ctrList, CV_WHOLE_SEQ, 1);
+                idx++;
 		
                 if (curArea > maxArea) {
+                    
                     maxArea = curArea;
+                    maxIdx = idx;
+                }
+		
+                // traverse the list
+                ctrList = ctrList.h_next ();
+            }
+            
+            idx = 0;
+            
+            // show the largest area
+            while (ctrIdx !=null && !ctrIdx.isNull()) {
+                
+                if (idx != maxIdx) {
+                    // make the smaller contour black   
                     cvDrawContours (
-                        grayImage, 
-                        ctr, 
-                        CV_RGB (0,0,0), 
-                        CV_RGB (0,0,0),
-						 0,
+                        binImage, 
+                        ctrIdx,
+                        CV_RGB (0,0,0), CV_RGB(0,0,0),
+                        0,
                         CV_FILLED,
                         8,
                         cvPoint(0,0));
                 }
-		
-                ctr = ctr.h_next ();
+                
+                idx++;
+                ctrIdx = ctrIdx.h_next ();
             }
-            */
             
-            //cvShowImage ("Binary" + m_camId, grayImage);
-            sendToServ (15, 90);
+            // Step 4. Calculate center of mass
+            double moment10, moment01, centerArea;
+        
+            cvMoments (binImage, moments, 1);
+            moment10    = cvGetSpatialMoment (moments, 1, 0);
+            moment01    = cvGetSpatialMoment (moments, 0, 1);
+            centerArea  = cvGetCentralMoment (moments, 0, 0);
+            
+            int cordX = (int) (moment10 / centerArea - m_camWidth/2);
+            int cordY = (int) (moment01 / centerArea);
+            log ("X: " + cordX + ", Y: " + cordY + ", area: " + centerArea);
+            
+            // Step 5. Transform into Theta (TODO)
+        
+            cvShowImage ("Bin_" + m_camId, binImage);
+            //sendToServ (15, 90);
         }
     }
     
     public static void main (String[] args) {
         
         if (args.length != 3) {
-            System.out.println ("Incorrect input format");
-            System.out.println ("java SmartBoard_CamCtrl [host] [port] [camId]");
+            log ("Incorrect input format");
+            log ("java SmartBoard_CamCtrl [host] [port] [camId]");
             return;
         }
         
-        String host     = args[0];
-        String port     = args[1];
-        String camId    = args[2];
+        String host  = args[0];
+        String port  = args[1];
+        String camId = args[2];
         
         try {
             SmartBoard_CamCtrl ctrl = 
@@ -143,7 +208,7 @@ public class SmartBoard_CamCtrl {
             ctrl.startCap ();
             
         } catch (Exception e) {
-            System.out.println ("Failed to start server.");
+            log ("Failed to start server.");
             e.printStackTrace ();
         }
     }

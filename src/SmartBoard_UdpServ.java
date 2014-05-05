@@ -13,6 +13,7 @@ public class SmartBoard_UdpServ implements Runnable {
     int m_port;
     ArrayList<SmartBoard_msg> m_msgBuf;
     
+    
     public SmartBoard_UdpServ (int port, int nCam) {
         m_nCam = nCam;
         m_port = port;
@@ -87,7 +88,7 @@ public class SmartBoard_UdpServ implements Runnable {
                 socket.receive (packet);
             
                 SmartBoard_msg msg = new SmartBoard_msg (packet.getData ());
-                System.out.println (msg);
+                //System.out.println (msg);
             
                 // put the msg to the right bucket 
                 m_msgBuf.add (msg.getId (), msg);
