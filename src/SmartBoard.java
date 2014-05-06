@@ -31,10 +31,8 @@ public class SmartBoard {
         }
         
         try {
-            
             SmartBoard_UdpServ serv = new SmartBoard_UdpServ (M_PORT, 4);
-            Thread t = new Thread (serv);
-            t.start ();
+            new Thread (serv).start ();
             
             //SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
         

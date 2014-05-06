@@ -26,7 +26,7 @@ public class SmartBoard_CamCtrl {
     // constants
     final static int m_camWidth   = 320;
     final static int m_camHeight  = 240;
-    final static int m_binThrsh   = 253;
+    final static int m_binThrsh   = 230;
     
     // data members
     int m_camId;
@@ -50,9 +50,9 @@ public class SmartBoard_CamCtrl {
     }
     
     // sending the UDP packet to the server
-    public void sendToServ (int theta, int confidence) {
+    public void sendToServ (int x, int y, int confidence) {
         
-        SmartBoard_msg msg = new SmartBoard_msg (m_camId, theta, confidence);
+        SmartBoard_msg msg = new SmartBoard_msg (m_camId, x, y, confidence);
         
         try {
             byte[] raw = msg.deflate ();
@@ -177,10 +177,10 @@ public class SmartBoard_CamCtrl {
             int cordY = (int) (moment01 / centerArea);
             log ("X: " + cordX + ", Y: " + cordY + ", area: " + centerArea);
             
-            // Step 5. Transform into Theta (TODO)
-        
+            // Step 5. Send to the UDP server        
+            cvShowImage ("Raw_" + m_camId, raw);
             cvShowImage ("Bin_" + m_camId, binImage);
-            //sendToServ (15, 90);
+            sendToServ (cordX, cordY, (int)centerArea);
         }
     }
     

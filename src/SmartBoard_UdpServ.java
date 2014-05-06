@@ -42,11 +42,15 @@ public class SmartBoard_UdpServ implements Runnable {
         // cam2 is the right one, and cam3 is the left one
         SmartBoard_msg[] cams = new SmartBoard_msg[4];
         
-        // check if null
         for (int i=0; i<m_nCam; ++i) {
             cams[i] = m_msgBuf.get (i);
-            if (cams[i] == null) 
-                return;
+        }
+        
+        // when one side is completely blind
+        if ((cams[0] == null && cams[1] == null) ||
+            (cams[2] == null && cams[3] == null)) {
+            SmartBoard.log ("One side is blind.");
+            return;
         }
         
         // pick the best 2.
