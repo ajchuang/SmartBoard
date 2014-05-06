@@ -27,12 +27,14 @@ public class SmartBoard_UdpServ implements Runnable {
     
     // solve the interaction of the equation.
     Point solveEquation (SmartBoard_msg v_msg, SmartBoard_msg h_msg) {
-        Point p = null;
+        Point p = new Point ((int)v_msg.getX (), (int)h_msg.getY ());
         return p;
     }
     
     // send point to UI
     void paintPoint (Point p) {
+        SmartBoard.logInfo ("Painting: " + p.getX () + ":" + p.getY ());
+        SmartBoard_AppCalib.getCalibWin ().drawPoint ((int)p.getX (), (int)p.getY ());
     }
     
     //TODO
@@ -46,16 +48,19 @@ public class SmartBoard_UdpServ implements Runnable {
             cams[i] = m_msgBuf.get (i);
         }
         
+        /*
         // when one side is completely blind
         if ((cams[0] == null && cams[1] == null) ||
             (cams[2] == null && cams[3] == null)) {
             SmartBoard.log ("One side is blind.");
             return;
         }
+        */
         
         // pick the best 2.
         SmartBoard_msg ver, hor;
         
+        /*
         if (cams[0].getConf () >= cams[0].getConf ())
             ver = cams[0];
         else
@@ -65,9 +70,15 @@ public class SmartBoard_UdpServ implements Runnable {
             hor = cams[2];
         else
             hor = cams[3];
+        */
         
-        // solve the equation & paint
-        paintPoint (solveEquation (ver, hor));
+        hor = cams[0];
+        ver = cams[1];
+        
+        if (hor != null && ver != null) {
+            // solve the equation & paint
+            paintPoint (solveEquation (ver, hor));
+        }
     }
 
     public void run () {

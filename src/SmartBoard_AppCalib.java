@@ -13,12 +13,31 @@ public class SmartBoard_AppCalib extends JFrame implements ActionListener {
     
     SmartBoard_AppPanel m_mainPanel;
     javax.swing.Timer   m_timer;
+    
+    static SmartBoard_AppCalib sm_calibWin;
+    
+    public static SmartBoard_AppCalib getCalibWin () {
+        return sm_calibWin;
+    }
 
     public SmartBoard_AppCalib () {
     
         setupUiComponents ();
         m_timer = new javax.swing.Timer (DEFAULT_TIME_OUT, this);
         m_timer.start ();
+        
+        sm_calibWin = this;
+    }
+    
+    public static void drawPoint (int x, int y) {
+        sm_calibWin.app_drawPoint (x, y);
+    }
+    
+    void app_drawPoint (int x, int y) {
+        m_mainPanel.drawCircle (100, 100, 10, new Color (255, 255, 255));
+        
+        // repaint to trigger
+        m_mainPanel.repaint ();
     }
     
     void setupUiComponents () {
@@ -71,6 +90,8 @@ public class SmartBoard_AppCalib extends JFrame implements ActionListener {
         }
     }
     
+    
+    
     void drawCalibLines () {
         
         int width   = m_mainPanel.getWidth ();
@@ -95,7 +116,7 @@ public class SmartBoard_AppCalib extends JFrame implements ActionListener {
     }
     
     public void actionPerformed (ActionEvent a) {
-        drawCalibIcons ();
+        //drawCalibIcons ();
         //drawCalibLines ();
         m_timer.stop ();
     }

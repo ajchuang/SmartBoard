@@ -30,6 +30,8 @@ public class SmartBoard_CamCtrl {
     
     // data members
     int m_camId;
+    int m_camPosX;
+    int m_camPosY;
     
     // networking members
     InetAddress m_host;
@@ -43,10 +45,12 @@ public class SmartBoard_CamCtrl {
         System.out.println ("  [Cam] " + s);
     } 
     
-    public SmartBoard_CamCtrl (int nCam, InetAddress host, int port) {
+    public SmartBoard_CamCtrl (int nCam, InetAddress host, int port, int x, int y) {
         m_camId = nCam;
         m_host = host;
         m_port = port;
+        m_camPosX = x;
+        m_camPosY = y;
     }
     
     // sending the UDP packet to the server
@@ -173,7 +177,7 @@ public class SmartBoard_CamCtrl {
             moment01    = cvGetSpatialMoment (moments, 0, 1);
             centerArea  = cvGetCentralMoment (moments, 0, 0);
             
-            int cordX = (int) (moment10 / centerArea - m_camWidth/2);
+            int cordX = (int) (moment10 / centerArea);// - m_camWidth/2);
             int cordY = (int) (moment01 / centerArea);
             log ("X: " + cordX + ", Y: " + cordY + ", area: " + centerArea);
             
@@ -181,27 +185,43 @@ public class SmartBoard_CamCtrl {
             cvShowImage ("Raw_" + m_camId, raw);
             cvShowImage ("Bin_" + m_camId, binImage);
             sendToServ (cordX, cordY, (int)centerArea);
+            
+            // maintain 5-fps
+            pause (200);
+        }
+    }
+    
+    void pause (long value) {
+        try {
+            Thread.sleep (value);
+        } catch (Exception e) {
+            System.out.println ("Exception @ pause: " + e);
+            e.printStackTrace ();
         }
     }
     
     public static void main (String[] args) {
         
-        if (args.length != 3) {
+        if (args.length != 5) {
             log ("Incorrect input format");
-            log ("java SmartBoard_CamCtrl [host] [port] [camId]");
+            log ("java SmartBoard_CamCtrl [host] [port] [X] [Y] [camId]");
             return;
         }
         
         String host  = args[0];
         String port  = args[1];
         String camId = args[2];
+        String camX  = args[3];
+        String camY  = args[4];
         
         try {
             SmartBoard_CamCtrl ctrl = 
                 new SmartBoard_CamCtrl (
                     Integer.parseInt (camId),
                     InetAddress.getByName (host), 
-                    Integer.parseInt (port));
+                    Integer.parseInt (port),
+                    Integer.parseInt (camX), 
+                    Integer.parseInt (camY));
             
             ctrl.startCap ();
             

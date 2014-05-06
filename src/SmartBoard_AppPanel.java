@@ -34,7 +34,7 @@ public class SmartBoard_AppPanel extends JPanel {
             ss.draw (g2d);
         }
 
-        g2d.dispose();
+        g2d.dispose ();
     }
     
     public void drawLine (int x_begin, int y_begin, int x_end, int y_end, int width, Color c) {
