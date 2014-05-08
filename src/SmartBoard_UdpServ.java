@@ -48,35 +48,39 @@ public class SmartBoard_UdpServ implements Runnable {
             cams[i] = m_msgBuf.get (i);
         }
         
-        /*
         // when one side is completely blind
         if ((cams[0] == null && cams[1] == null) ||
             (cams[2] == null && cams[3] == null)) {
-            SmartBoard.log ("One side is blind.");
+            SmartBoard.logInfo ("One side is blind.");
             return;
         }
-        */
         
         // pick the best 2.
-        SmartBoard_msg ver, hor;
+        SmartBoard_msg ver;
+        SmartBoard_msg hor;
         
-        /*
-        if (cams[0].getConf () >= cams[0].getConf ())
+        // pick the horizontal one
+        if (cams[0] == null)
+            ver = cams[1];
+        else if (cams[1] == null) 
             ver = cams[0];
-        else
+        else if (cams[0].getConf () >= cams[0].getConf ()) 
+            ver = cams[0]; 
+        else 
             ver = cams[1];
         
-        if (cams[2].getConf () >= cams[3].getConf ())
-            hor = cams[2];
-        else
+        // piack the vertical one
+        if (cams[2] == null)
             hor = cams[3];
-        */
+        else if (cams[3] == null)
+            hor = cams[2];
+        else if (cams[2].getConf () >= cams[3].getConf ())
+            hor = cams[2]; 
+        else 
+            hor = cams[3];
         
-        hor = cams[0];
-        ver = cams[1];
-        
+        // solve the equation
         if (hor != null && ver != null) {
-            // solve the equation & paint
             paintPoint (solveEquation (ver, hor));
         }
     }

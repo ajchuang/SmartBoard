@@ -23,15 +23,22 @@ import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
 public class SmartBoard_CamCtrl {
     
+    final static int m_flipNone    = 2;
+    final static int m_flipVert    = 1;
+    final static int m_flipHori    = 0;
+    final static int m_flipBoth    = -1;
+    
     // constants
-    final static int m_camWidth   = 320;
-    final static int m_camHeight  = 240;
-    final static int m_binThrsh   = 230;
+    final static int m_camWidth    = 320;
+    final static int m_camHeight   = 240;
+    final static int m_binThrsh    = 150;
+    final static int m_minRetrArea = 3000;
     
     // data members
     int m_camId;
     int m_camPosX;
     int m_camPosY;
+    int m_flipping; // 
     
     // networking members
     InetAddress m_host;
@@ -45,12 +52,13 @@ public class SmartBoard_CamCtrl {
         System.out.println ("  [Cam] " + s);
     } 
     
-    public SmartBoard_CamCtrl (int nCam, InetAddress host, int port, int x, int y) {
+    public SmartBoard_CamCtrl (int nCam, InetAddress host, int port, int x, int y, int flipping) {
         m_camId = nCam;
         m_host = host;
         m_port = port;
         m_camPosX = x;
         m_camPosY = y;
+        m_flipping = flipping;
     }
     
     // sending the UDP packet to the server
@@ -73,14 +81,11 @@ public class SmartBoard_CamCtrl {
         
         int w = m_camWidth;
         int h = m_camHeight;
-        double curArea = 0.0;
-        double maxArea = 0.0;
         
         // opencv variables
         IplImage raw = null;
-        IplImage hsvImage = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 3);
-        IplImage grayImage = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 1);
-        IplImage binImage = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 1);
+        IplImage grayImage  = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 1);
+        IplImage binImage   = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 1);
         
         CvMemStorage storage = CvMemStorage.create ();
         CvSeq ctrIdx = null;
@@ -98,18 +103,27 @@ public class SmartBoard_CamCtrl {
         // starting image processing - to decide the equation
         while (true) {
             
+            double curArea = 0.0;
+            double maxArea = 0.0;
+            
             // step 1. capture the frame
             raw = cvQueryFrame (cap);
-            //log ("frame: " + frameIdx++);
             
+
             if (raw == null) {
                 log ("System Error: Failed to capture");
                 System.exit (0);
+            } else {
+                if (m_flipping != m_flipNone) 
+                    cvFlip (raw, raw, m_flipNone);
+                    
+                cvShowImage ("Raw_" + m_camId, raw);
             }
             
             // step 2. do binary threshholding
             cvCvtColor (raw, grayImage, CV_BGR2GRAY);
             cvThreshold (grayImage, binImage, m_binThrsh, 255, CV_THRESH_BINARY);
+            cvShowImage ("RawBin_" + m_camId, binImage);
             
             // step 3. find the max contour
             CvSeq ctrList = new CvSeq ();
@@ -125,7 +139,8 @@ public class SmartBoard_CamCtrl {
             
             if (r == -1) {
                 // contour finds nothing, return
-                log ("cvFindContours returns -1");
+                log ("cvFindContours returns -1 - no contour this time.");
+                pause (200);
                 continue; 
             }
             
@@ -139,7 +154,6 @@ public class SmartBoard_CamCtrl {
                 idx++;
 		
                 if (curArea > maxArea) {
-                    
                     maxArea = curArea;
                     maxIdx = idx;
                 }
@@ -148,6 +162,9 @@ public class SmartBoard_CamCtrl {
                 ctrList = ctrList.h_next ();
             }
             
+            log ("maxArea: " + maxArea + ", maxIdx: " + maxIdx);
+            
+            // mark the non-max contour
             idx = 0;
             
             // show the largest area
@@ -169,6 +186,8 @@ public class SmartBoard_CamCtrl {
                 ctrIdx = ctrIdx.h_next ();
             }
             
+            cvShowImage ("Bin_" + m_camId, binImage);
+            
             // Step 4. Calculate center of mass
             double moment10, moment01, centerArea;
         
@@ -179,12 +198,14 @@ public class SmartBoard_CamCtrl {
             
             int cordX = (int) (moment10 / centerArea);// - m_camWidth/2);
             int cordY = (int) (moment01 / centerArea);
-            log ("X: " + cordX + ", Y: " + cordY + ", area: " + centerArea);
+            log ("X: " + cordX + ", Y: " + cordY + ", area = " + maxArea);
             
             // Step 5. Send to the UDP server        
-            cvShowImage ("Raw_" + m_camId, raw);
-            cvShowImage ("Bin_" + m_camId, binImage);
-            sendToServ (cordX, cordY, (int)centerArea);
+            if (maxArea < m_minRetrArea) {
+                // the smaller area the better.
+                int conf = (-1) * (int)maxArea;
+                sendToServ (cordX, cordY, conf);
+            }
             
             // maintain 5-fps
             pause (200);
@@ -202,17 +223,17 @@ public class SmartBoard_CamCtrl {
     
     public static void main (String[] args) {
         
-        if (args.length != 5) {
-            log ("Incorrect input format");
-            log ("java SmartBoard_CamCtrl [host] [port] [X] [Y] [camId]");
-            return;
-        }
+        //if (args.length != 5) {
+        //    log ("Incorrect input format");
+        //    log ("java SmartBoard_CamCtrl [host] [port] [X] [Y] [camId]");
+        //    return;
+        //}
         
         String host  = args[0];
         String port  = args[1];
         String camId = args[2];
-        String camX  = args[3];
-        String camY  = args[4];
+        //String camX  = args[3];
+        //String camY  = args[4];
         
         try {
             SmartBoard_CamCtrl ctrl = 
@@ -220,8 +241,9 @@ public class SmartBoard_CamCtrl {
                     Integer.parseInt (camId),
                     InetAddress.getByName (host), 
                     Integer.parseInt (port),
-                    Integer.parseInt (camX), 
-                    Integer.parseInt (camY));
+                    0, //Integer.parseInt (camX), 
+                    0,
+                    m_flipNone); //Integer.parseInt (camY));
             
             ctrl.startCap ();
             
