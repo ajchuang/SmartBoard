@@ -48,12 +48,20 @@ public class SmartBoard_UdpServ implements Runnable {
             cams[i] = m_msgBuf.get (i);
         }
         
+        // testing - need 4 camera to proceed
+        if (cams[0] == null || cams[1] == null || 
+            cams[2] == null || cams[3] == null) {
+                
+            SmartBoard.logInfo ("One camera is blind.");
+            return;
+        }
+        
         // when one side is completely blind
         if ((cams[0] == null && cams[1] == null) ||
             (cams[2] == null && cams[3] == null)) {
             SmartBoard.logInfo ("One side is blind.");
             return;
-        }
+        } 
         
         // pick the best 2.
         SmartBoard_msg ver;
@@ -78,6 +86,8 @@ public class SmartBoard_UdpServ implements Runnable {
             hor = cams[2]; 
         else 
             hor = cams[3];
+        
+        
         
         // solve the equation
         if (hor != null && ver != null) {
