@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.awt.Point;
+import java.awt.*;
 
 public class SmartBoard_UdpServ implements Runnable {
 
@@ -11,13 +12,19 @@ public class SmartBoard_UdpServ implements Runnable {
     
     int m_nCam;
     int m_port;
+    int m_screenResWidth;
+    int m_screenResHeight;
     ArrayList<SmartBoard_msg> m_msgBuf;
-    
     
     public SmartBoard_UdpServ (int port, int nCam) {
         m_nCam = nCam;
         m_port = port;
         m_msgBuf = new ArrayList<SmartBoard_msg> ();
+        
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        m_screenResWidth  = gd.getDisplayMode().getWidth();
+        m_screenResHeight = gd.getDisplayMode().getHeight();
+        SmartBoard.logInfo ("Resolution: " + m_screenResWidth + ":" + m_screenResHeight);
         
         // force to create sufficient entries
         for (int i=0; i<nCam; ++i) {
@@ -27,13 +34,20 @@ public class SmartBoard_UdpServ implements Runnable {
     
     // solve the interaction of the equation.
     Point solveEquation (SmartBoard_msg v_msg, SmartBoard_msg h_msg) {
-        Point p = new Point ((int)v_msg.getX (), (int)h_msg.getY ());
+        
+        // rescale to the screen
+        int x = (int) h_msg.getX () * (m_screenResWidth/320);
+        int y = (int) v_msg.getX () * (m_screenResHeight/320);
+        
+        // create the new point
+        Point p = new Point (x, y);
         return p;
     }
     
     // send point to UI
     void paintPoint (Point p) {
         SmartBoard.logInfo ("Painting: " + p.getX () + ":" + p.getY ());
+        
         SmartBoard_AppCalib.getCalibWin ().drawPoint ((int)p.getX (), (int)p.getY ());
     }
     
@@ -86,8 +100,6 @@ public class SmartBoard_UdpServ implements Runnable {
             hor = cams[2]; 
         else 
             hor = cams[3];
-        
-        
         
         // solve the equation
         if (hor != null && ver != null) {

@@ -1,6 +1,6 @@
 // Standard imports
 import java.util.*;
-import java.io.File;
+import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.awt.AWTException;
@@ -23,22 +23,23 @@ import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
 public class SmartBoard_CamCtrl {
     
-    final static int m_flipNone    = 2;
-    final static int m_flipVert    = 1;
-    final static int m_flipHori    = 0;
-    final static int m_flipBoth    = -1;
+    final static int m_mountTop    = 1;
+    final static int m_mountBottom = 2;
+    final static int m_mountLeft   = 3;
+    final static int m_mountRight  = 4;
     
     // constants
     final static int m_camWidth    = 320;
     final static int m_camHeight   = 240;
-    final static int m_binThrsh    = 150;
+    final static int m_binThrsh    = 230;
     final static int m_minRetrArea = 3000;
     
     // data members
     int m_camId;
     int m_camPosX;
     int m_camPosY;
-    int m_flipping; // 
+    int m_flipping;
+    int m_mount;
     
     // networking members
     InetAddress m_host;
@@ -52,13 +53,70 @@ public class SmartBoard_CamCtrl {
         System.out.println ("  [Cam] " + s);
     } 
     
-    public SmartBoard_CamCtrl (int nCam, InetAddress host, int port, int x, int y, int flipping) {
-        m_camId = nCam;
-        m_host = host;
-        m_port = port;
-        m_camPosX = x;
-        m_camPosY = y;
-        m_flipping = flipping;
+    public SmartBoard_CamCtrl (String config) {
+    
+        try {
+            m_camId = 0;
+            m_host = InetAddress.getByName ("localhost");
+            m_port = 8888;
+            m_camPosX = 0;
+            m_camPosY = 0;
+            m_flipping = 0;
+            m_mount = m_mountTop;
+            
+            parseConfig (config);
+        } catch (Exception e) {
+            SmartBoard.logErr ("Bad error");
+            System.exit (0);
+        }
+    }
+    
+    void parseConfig (String fname) {
+    
+        try {    
+            BufferedReader br = new BufferedReader (new FileReader (fname));
+            String strLine;
+            
+            //Read File Line By Line
+            while ((strLine = br.readLine()) != null)   {
+                
+                if (strLine.startsWith ("id=")) {
+                    String id = strLine.substring (3);
+                    m_camId = Integer.parseInt (id);
+                } else if (strLine.startsWith ("host=")) {
+                    String host = strLine.substring (5);
+                    m_host = InetAddress.getByName (host);
+                } else if (strLine.startsWith ("port=")) {
+                    String port = strLine.substring (5);
+                    m_port = Integer.parseInt (port);
+                } else if (strLine.startsWith ("x=")) {
+                    String x = strLine.substring (2);
+                    m_camPosX = Integer.parseInt (x);
+                } else if (strLine.startsWith ("y=")) {
+                    String y = strLine.substring (2);
+                    m_camPosY = Integer.parseInt (y);
+                } else if (strLine.startsWith ("mount=")) {
+                    String mount = strLine.substring (6).trim ();
+                    
+                    if (mount.equals ("top")) {
+                        m_mount = m_mountTop;
+                    } else if (mount.equals ("bottom")) {
+                        m_mount = m_mountBottom;
+                    } else if (mount.equals ("right")) {
+                        m_mount = m_mountRight;
+                    } else if (mount.equals ("left")) {
+                        m_mount = m_mountLeft;
+                    } 
+                }
+                    
+                // Print the content on the console
+                System.out.println (strLine);
+            }
+            
+            br.close();
+        } catch (Exception e){//Catch exception if any
+            System.err.println("Error: " + e.getMessage());
+        }
     }
     
     // sending the UDP packet to the server
@@ -108,14 +166,14 @@ public class SmartBoard_CamCtrl {
             
             // step 1. capture the frame
             raw = cvQueryFrame (cap);
-            
 
             if (raw == null) {
                 log ("System Error: Failed to capture");
                 System.exit (0);
             } else {
-                if (m_flipping != m_flipNone) 
-                    cvFlip (raw, raw, m_flipNone);
+                
+                if (m_mount == m_mountTop) 
+                    cvFlip (raw, raw, 1);
                     
                 cvShowImage ("Raw_" + m_camId, raw);
             }
@@ -123,7 +181,6 @@ public class SmartBoard_CamCtrl {
             // step 2. do binary threshholding
             cvCvtColor (raw, grayImage, CV_BGR2GRAY);
             cvThreshold (grayImage, binImage, m_binThrsh, 255, CV_THRESH_BINARY);
-            cvShowImage ("RawBin_" + m_camId, binImage);
             
             // step 3. find the max contour
             CvSeq ctrList = new CvSeq ();
@@ -151,14 +208,14 @@ public class SmartBoard_CamCtrl {
             while (ctrList != null && !ctrList.isNull ()) {
                 
                 curArea = cvContourArea (ctrList, CV_WHOLE_SEQ, 1);
-                idx++;
-		
+                
                 if (curArea > maxArea) {
                     maxArea = curArea;
                     maxIdx = idx;
                 }
 		
                 // traverse the list
+                idx++;
                 ctrList = ctrList.h_next ();
             }
             
@@ -170,8 +227,11 @@ public class SmartBoard_CamCtrl {
             // show the largest area
             while (ctrIdx !=null && !ctrIdx.isNull()) {
                 
+                log ("maxArea: testing id @" + idx);
+                
                 if (idx != maxIdx) {
                     // make the smaller contour black   
+                    
                     cvDrawContours (
                         binImage, 
                         ctrIdx,
@@ -180,6 +240,8 @@ public class SmartBoard_CamCtrl {
                         CV_FILLED,
                         8,
                         cvPoint(0,0));
+                } else {
+                    log ("maxArea: unpainted @" + idx);
                 }
                 
                 idx++;
@@ -223,27 +285,24 @@ public class SmartBoard_CamCtrl {
     
     public static void main (String[] args) {
         
-        //if (args.length != 5) {
-        //    log ("Incorrect input format");
-        //    log ("java SmartBoard_CamCtrl [host] [port] [X] [Y] [camId]");
-        //    return;
-        //}
+        if (args.length != 1) {
+            log ("Incorrect input format");
+            log ("java SmartBoard_CamCtrl [config file]");
+            return;
+        }
         
-        String host  = args[0];
-        String port  = args[1];
-        String camId = args[2];
+        String config = args[0];
+        //parseConfig (config);
+        
+        //String host  = args[0];
+        //String port  = args[1];
+        //String camId = args[2];
         //String camX  = args[3];
         //String camY  = args[4];
         
         try {
             SmartBoard_CamCtrl ctrl = 
-                new SmartBoard_CamCtrl (
-                    Integer.parseInt (camId),
-                    InetAddress.getByName (host), 
-                    Integer.parseInt (port),
-                    0, //Integer.parseInt (camX), 
-                    0,
-                    m_flipNone); //Integer.parseInt (camY));
+                new SmartBoard_CamCtrl (config);
             
             ctrl.startCap ();
             
