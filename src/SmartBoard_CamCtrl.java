@@ -261,9 +261,10 @@ public class SmartBoard_CamCtrl {
             int cordX;
             int cordY;
             
-            if (m_mount == m_mountBottom || m_mount == m_mountTop) 
-                cordX = (int) ((moment10 / centerArea) - m_camWidth/2 + m_camPosX);
-            else {
+            if (m_mount == m_mountBottom || m_mount == m_mountTop) {
+                int obs_X = (int)(moment10 / centerArea); 
+                cordX = (int) ((obs_X - m_camWidth/2) * 1.6 + m_camPosX);
+            } else {
                 int obs_X = (int)(moment10 / centerArea);
                 cordX = (int) ((obs_X - m_camWidth/2) * 2 + m_camPosY);
             }
