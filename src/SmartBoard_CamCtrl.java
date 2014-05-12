@@ -278,9 +278,9 @@ public class SmartBoard_CamCtrl {
                 double param;
                 
                 if (maxArea > 2000.0)
-                    param = 2.5;
+                    param = 2.2;
                 else
-                    param = 1.8;
+                    param = 1.6;
                 
                 cordX = (int) (((double)(obs_X - m_camWidth/2) * param) + m_camPosY);
             }
