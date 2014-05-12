@@ -34,7 +34,7 @@ public class SmartBoard {
             SmartBoard_UdpServ serv = new SmartBoard_UdpServ (M_PORT, 4);
             new Thread (serv).start ();
             
-            SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
+            //SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
         
             // run the UI
             //SmartBoard_AppMain.getAppMain ();
