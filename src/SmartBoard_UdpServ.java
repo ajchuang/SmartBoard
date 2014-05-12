@@ -48,7 +48,7 @@ public class SmartBoard_UdpServ implements Runnable {
     void paintPoint (Point p) {
         SmartBoard.logInfo ("Painting: " + p.getX () + ":" + p.getY ());
         
-        SmartBoard_AppCalib.getCalibWin ().drawPoint ((int)p.getX (), (int)p.getY ());
+        //SmartBoard_AppCalib.getCalibWin ().drawPoint ((int)p.getX (), (int)p.getY ());
     }
     
     //TODO

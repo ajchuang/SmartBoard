@@ -258,8 +258,16 @@ public class SmartBoard_CamCtrl {
             moment01    = cvGetSpatialMoment (moments, 0, 1);
             centerArea  = cvGetCentralMoment (moments, 0, 0);
             
-            int cordX = (int) (moment10 / centerArea);// - m_camWidth/2);
-            int cordY = (int) (moment01 / centerArea);
+            int cordX;
+            int cordY;
+            
+            if (m_mount == m_mountBottom || m_mount == m_mountTop) 
+                cordX = (int) ((moment10 / centerArea) - m_camWidth/2 + m_camPosX);
+            else
+                cordX = (int) ((moment10 / centerArea) - m_camHeight/2 + m_camPosY);
+                
+            cordY = (int) (moment01 / centerArea);
+            
             log ("X: " + cordX + ", Y: " + cordY + ", area = " + maxArea);
             
             // Step 5. Send to the UDP server        
