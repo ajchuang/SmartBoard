@@ -23,10 +23,10 @@ import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
 public class SmartBoard_CamCtrl {
     
-    final static int m_mountTop    = 1;
-    final static int m_mountBottom = 2;
-    final static int m_mountLeft   = 3;
-    final static int m_mountRight  = 4;
+    final static int m_mountTop    = 0;
+    final static int m_mountBottom = 1;
+    final static int m_mountLeft   = 2;
+    final static int m_mountRight  = 3;
     
     // constants
     final static int m_camWidth    = 320;
@@ -122,7 +122,7 @@ public class SmartBoard_CamCtrl {
     // sending the UDP packet to the server
     public void sendToServ (int x, int y, int confidence) {
         
-        SmartBoard_msg msg = new SmartBoard_msg (m_camId, x, y, confidence);
+        SmartBoard_msg msg = new SmartBoard_msg (m_mount, x, y, confidence);
         
         try {
             byte[] raw = msg.deflate ();

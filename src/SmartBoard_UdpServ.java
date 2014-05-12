@@ -8,7 +8,11 @@ import java.awt.*;
 
 public class SmartBoard_UdpServ implements Runnable {
 
-    final int M_MAX_MSG_SIZE = 32;
+    final static int M_MAX_MSG_SIZE = 32;
+    final static int m_mountTop    = 0;
+    final static int m_mountBottom = 1;
+    final static int m_mountLeft   = 2;
+    final static int m_mountRight  = 3;
     
     int m_nCam;
     int m_port;
@@ -36,17 +40,17 @@ public class SmartBoard_UdpServ implements Runnable {
     Point solveEquation (SmartBoard_msg v_msg, SmartBoard_msg h_msg) {
         
         // rescale to the screen
-        int x = (int) h_msg.getX () * (m_screenResWidth/320);
-        int y = (int) v_msg.getX () * (m_screenResHeight/320);
+        //int x = (int) h_msg.getX () * (m_screenResWidth/320);
+        //int y = (int) v_msg.getX () * (m_screenResHeight/320);
         
         // create the new point
-        Point p = new Point (x, y);
+        Point p = new Point (h_msg.getX (), v_msg.getX ());
         return p;
     }
     
     // send point to UI
     void paintPoint (Point p) {
-        SmartBoard.logInfo ("Painting: " + p.getX () + ":" + p.getY ());
+        SmartBoard.logInfo ("Painting: (" + p.getX () + ", " + p.getY () + ")");
         
         //SmartBoard_AppCalib.getCalibWin ().drawPoint ((int)p.getX (), (int)p.getY ());
     }
@@ -63,16 +67,16 @@ public class SmartBoard_UdpServ implements Runnable {
         }
         
         // testing - need 4 camera to proceed
-        if (cams[0] == null || cams[1] == null || 
-            cams[2] == null || cams[3] == null) {
+        if (cams[m_mountTop]  == null || cams[m_mountBottom] == null || 
+            cams[m_mountLeft] == null || cams[m_mountRight]  == null) {
                 
             SmartBoard.logInfo ("One camera is blind.");
             return;
         }
         
         // when one side is completely blind
-        if ((cams[0] == null && cams[1] == null) ||
-            (cams[2] == null && cams[3] == null)) {
+        if ((cams[m_mountTop]  == null && cams[m_mountBottom] == null) ||
+            (cams[m_mountLeft] == null && cams[m_mountRight] == null)) {
             SmartBoard.logInfo ("One side is blind.");
             return;
         } 
@@ -82,24 +86,24 @@ public class SmartBoard_UdpServ implements Runnable {
         SmartBoard_msg hor;
         
         // pick the horizontal one
-        if (cams[0] == null)
-            ver = cams[1];
-        else if (cams[1] == null) 
-            ver = cams[0];
-        else if (cams[0].getConf () >= cams[0].getConf ()) 
-            ver = cams[0]; 
+        if (cams[m_mountLeft] == null)
+            ver = cams[m_mountRight];
+        else if (cams[m_mountRight] == null) 
+            ver = cams[m_mountLeft];
+        else if (cams[m_mountRight].getConf () >= cams[m_mountLeft].getConf ()) 
+            ver = cams[m_mountRight]; 
         else 
-            ver = cams[1];
+            ver = cams[m_mountLeft];
         
         // piack the vertical one
-        if (cams[2] == null)
-            hor = cams[3];
-        else if (cams[3] == null)
-            hor = cams[2];
-        else if (cams[2].getConf () >= cams[3].getConf ())
-            hor = cams[2]; 
+        if (cams[m_mountTop] == null)
+            hor = cams[m_mountBottom];
+        else if (cams[m_mountBottom] == null)
+            hor = cams[m_mountTop];
+        else if (cams[m_mountTop].getConf () >= cams[m_mountBottom].getConf ())
+            hor = cams[m_mountTop]; 
         else 
-            hor = cams[3];
+            hor = cams[m_mountBottom];
         
         // solve the equation
         if (hor != null && ver != null) {
