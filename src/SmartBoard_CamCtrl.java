@@ -268,7 +268,7 @@ public class SmartBoard_CamCtrl {
                 
             cordY = (int) (moment01 / centerArea);
             
-            log ("X: " + cordX + ", Y: " + cordY + ", area = " + maxArea);
+            log ("Cam id: " + m_mount + " X: " + cordX + ", Y: " + cordY + ", area = " + maxArea);
             
             // Step 5. Send to the UDP server        
             if (maxArea < m_minRetrArea) {
