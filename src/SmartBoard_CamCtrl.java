@@ -172,7 +172,7 @@ public class SmartBoard_CamCtrl {
                 System.exit (0);
             } else {
                 
-                if (m_mount == m_mountBottom) 
+                if (m_mount == m_mountBottom || m_mount == m_mountTop) 
                     cvFlip (raw, raw, 1);
                     
                 cvShowImage ("Raw_" + m_camId, raw);
