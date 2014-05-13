@@ -4,7 +4,8 @@ import java.net.URL;
 
 public class SmartBoard {
     
-    final public static int M_PORT = 8888; 
+    final public static int M_PORT = 8888;
+    SmartBoard_Paint m_mainUi;
 
     public static void logErr (String s) {
         System.out.println ("[ERROR]" + s);
@@ -33,6 +34,10 @@ public class SmartBoard {
         try {
             SmartBoard_UdpServ serv = new SmartBoard_UdpServ (M_PORT, 4);
             new Thread (serv).start ();
+            
+            // start the UI
+            SmartBoard_Paint.start ();
+            //m_mainUi = 
             
             //SmartBoard_AppCalib calib = new SmartBoard_AppCalib ();
         

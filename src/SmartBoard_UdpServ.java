@@ -51,7 +51,8 @@ public class SmartBoard_UdpServ implements Runnable {
     // send point to UI
     void paintPoint (Point p) {
         SmartBoard.logInfo ("Painting: (" + p.getX () + ", " + p.getY () + ")");
-        
+        SmartBoard_Paint paint = SmartBoard_Paint.getInstance ();
+        paint.draw (p);
         //SmartBoard_AppCalib.getCalibWin ().drawPoint ((int)p.getX (), (int)p.getY ());
     }
     
@@ -64,14 +65,6 @@ public class SmartBoard_UdpServ implements Runnable {
         
         for (int i=0; i<m_nCam; ++i) {
             cams[i] = m_msgBuf.get (i);
-        }
-        
-        // testing - need 4 camera to proceed
-        if (cams[m_mountTop]  == null || cams[m_mountBottom] == null || 
-            cams[m_mountLeft] == null || cams[m_mountRight]  == null) {
-                
-            SmartBoard.logInfo ("One camera is blind.");
-            return;
         }
         
         // when one side is completely blind
