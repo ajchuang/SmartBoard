@@ -67,8 +67,8 @@ public class SmartBoard_UdpServ implements Runnable {
             cams[i] = m_msgBuf.get (i);
         }
         
-        if ((cams[m_mountTop]  == null || cams[m_mountBottom] == null) ||
-            (cams[m_mountLeft] == null || cams[m_mountRight] == null)) {
+        if (cams[m_mountTop]  == null || cams[m_mountBottom] == null ||
+            cams[m_mountLeft] == null || cams[m_mountRight]  == null) {
             SmartBoard.logInfo ("One cam is blind.");
             return;
         }
@@ -107,6 +107,10 @@ public class SmartBoard_UdpServ implements Runnable {
         // solve the equation
         if (hor != null && ver != null) {
             paintPoint (solveEquation (ver, hor));
+        }
+        
+        for (int i=0; i<m_nCam; ++i) {
+            cams[i] = m_msgBuf.set (i, null);
         }
     }
 

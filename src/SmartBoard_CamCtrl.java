@@ -196,7 +196,7 @@ public class SmartBoard_CamCtrl {
             
             if (r == -1) {
                 // contour finds nothing, return
-                log ("cvFindContours returns -1 - no contour this time.");
+                //log ("cvFindContours returns -1 - no contour this time.");
                 pause (200);
                 continue; 
             }
@@ -219,7 +219,7 @@ public class SmartBoard_CamCtrl {
                 ctrList = ctrList.h_next ();
             }
             
-            log ("maxArea: " + maxArea + ", maxIdx: " + maxIdx);
+            //log ("maxArea: " + maxArea + ", maxIdx: " + maxIdx);
             
             // mark the non-max contour
             idx = 0;
@@ -227,7 +227,7 @@ public class SmartBoard_CamCtrl {
             // show the largest area
             while (ctrIdx !=null && !ctrIdx.isNull()) {
                 
-                log ("maxArea: testing id @" + idx);
+                //log ("maxArea: testing id @" + idx);
                 
                 if (idx != maxIdx) {
                     // make the smaller contour black   
