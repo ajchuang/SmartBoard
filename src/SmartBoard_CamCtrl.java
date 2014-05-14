@@ -290,11 +290,11 @@ public class SmartBoard_CamCtrl {
             log ("Cam id: " + m_mount + " X: " + cordX + ", Y: " + cordY + ", area = " + maxArea);
             
             // Step 5. Send to the UDP server        
-            if (maxArea < m_minRetrArea) {
+            //if (maxArea < m_minRetrArea) {
                 // the smaller area the better.
                 int conf = (-1) * (int)maxArea;
                 sendToServ (cordX, cordY, conf);
-            }
+            //}
             
             // maintain 5-fps
             //pause ();
