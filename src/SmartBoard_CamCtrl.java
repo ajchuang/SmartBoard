@@ -297,7 +297,7 @@ public class SmartBoard_CamCtrl {
             }
             
             // maintain 5-fps
-            pause (200);
+            //pause ();
         }
     }
     
