@@ -266,12 +266,14 @@ public class SmartBoard_CamCtrl {
                 int obs_X = (int)(moment10 / centerArea);
                 double param = 1.0;
                 
+                /*
                 if (maxArea > 2000.0)
                     param = 1.3;
                 else if (maxArea > 1500.0)
                     param = 1.5;
                 else if (maxArea > 1000.0)
                     param = 1.8;
+                */
                     
                 cordX = (int) (((double)(obs_X - m_camWidth/2) * param) + m_camPosX);
                 
@@ -279,12 +281,14 @@ public class SmartBoard_CamCtrl {
                 int obs_X = (int)(moment10 / centerArea);
                 double param = 1.3;
                 
+                /*
                 if (maxArea > 800.0)
                     param = 1.6;
                 else if (maxArea > 400.0)
                     param = 1.9;
                 else if (maxArea > 200.0)
                     param = 2.2;
+                */
                 
                 cordX = (int) (((double)(obs_X - m_camWidth/2) * param) + m_camPosY);
             }
