@@ -67,6 +67,12 @@ public class SmartBoard_UdpServ implements Runnable {
             cams[i] = m_msgBuf.get (i);
         }
         
+        if ((cams[m_mountTop]  == null || cams[m_mountBottom] == null) ||
+            (cams[m_mountLeft] == null || cams[m_mountRight] == null)) {
+            SmartBoard.logInfo ("One cam is blind.");
+            return;
+        }
+        
         // when one side is completely blind
         if ((cams[m_mountTop]  == null && cams[m_mountBottom] == null) ||
             (cams[m_mountLeft] == null && cams[m_mountRight] == null)) {
