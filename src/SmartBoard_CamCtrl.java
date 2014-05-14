@@ -175,12 +175,16 @@ public class SmartBoard_CamCtrl {
                 if (m_mount == m_mountRight || m_mount == m_mountTop) 
                     cvFlip (raw, raw, 1);
                     
-                cvShowImage ("Raw_" + m_camId, raw);
+                
             }
             
             // step 2. do binary threshholding
             cvCvtColor (raw, grayImage, CV_BGR2GRAY);
             cvThreshold (grayImage, binImage, m_binThrsh, 255, CV_THRESH_BINARY);
+            
+            cvShowImage ("Raw_" + m_camId, raw);
+            cvShowImage ("gray_" + m_camId, grayImage);
+            cvShowImage ("bin_" + m_camId, binImage);
             
             // step 3. find the max contour
             CvSeq ctrList = new CvSeq ();
@@ -248,7 +252,7 @@ public class SmartBoard_CamCtrl {
                 ctrIdx = ctrIdx.h_next ();
             }
             
-            cvShowImage ("Bin_" + m_camId, binImage);
+            cvShowImage ("Fin_" + m_camId, binImage);
             
             // Step 4. Calculate center of mass
             double moment10, moment01, centerArea;
@@ -268,29 +272,29 @@ public class SmartBoard_CamCtrl {
                 
                 /*
                 if (maxArea > 2000.0)
-                    param = 1.3;
+                    param = 0.4;
                 else if (maxArea > 1500.0)
-                    param = 1.5;
+                    param = 0.6;
                 else if (maxArea > 1000.0)
-                    param = 1.8;
+                    param = 0.8;
                 */
-                    
-                cordX = (int) (((double)(obs_X - m_camWidth/2) * param) + m_camPosX);
+                
+                cordX = (int) (((double)(obs_X * param - m_camWidth/2)) + m_camPosX);
                 
             } else {
                 int obs_X = (int)(moment10 / centerArea);
-                double param = 1.3;
+                double param = 1.0;
                 
                 /*
                 if (maxArea > 800.0)
-                    param = 1.6;
+                    param = 0.4;
                 else if (maxArea > 400.0)
-                    param = 1.9;
+                    param = 0.6;
                 else if (maxArea > 200.0)
-                    param = 2.2;
+                    param = 0.8;
                 */
                 
-                cordX = (int) (((double)(obs_X - m_camWidth/2) * param) + m_camPosY);
+                cordX = (int) ((double)(obs_X * param - m_camWidth/2) + m_camPosY);
             }
                 
             cordY = (int) (moment01 / centerArea);
