@@ -54,12 +54,12 @@ public class SmartBoard_Paint {
             hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             renderingHints = new RenderingHints(hintsMap); 
 
-            setImage (new BufferedImage(1024, 768, BufferedImage.TYPE_INT_RGB));
+            setImage (new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB));
             gui = new JPanel(new BorderLayout(4,4));
             gui.setBorder(new EmptyBorder(5,3,5,3));
 
             JPanel imageView = new JPanel(new GridBagLayout());
-            imageView.setPreferredSize(new Dimension(1024,768));
+            imageView.setPreferredSize(new Dimension(800, 600));
             imageLabel = new JLabel(new ImageIcon(canvasImage));
             JScrollPane imageScroll = new JScrollPane(imageView);
             imageView.add(imageLabel);
