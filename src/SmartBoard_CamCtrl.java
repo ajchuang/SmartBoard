@@ -31,7 +31,7 @@ public class SmartBoard_CamCtrl {
     // constants
     final static int m_camWidth    = 320;
     final static int m_camHeight   = 240;
-    final static int m_binThrsh    = 150;
+    final static int m_binThrsh    = 100;
     final static int m_minRetrArea = 3000;
     
     // data members
